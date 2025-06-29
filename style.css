@@ -45,7 +45,7 @@ h1, h2 {
 }
 
 /* Specific styling for sections to add separators */
-.info-section { 
+.info-section {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 20px; /* Increased padding */
     margin-top: 20px; /* Increased margin */
@@ -57,7 +57,7 @@ h1, h2 {
     max-width: 450px; /* Max width for info buttons group */
 }
 
-.music-controls { 
+.music-controls {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 20px; /* Increased padding */
     margin-top: 20px; /* Increased margin */
@@ -71,13 +71,13 @@ h1, h2 {
     margin-right: auto; /* Center the group */
 }
 
-#game-mode-screen, #ai-difficulty-screen, #room-screen { 
+#game-mode-screen, #ai-difficulty-screen, #room-screen {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 20px; /* Increased padding */
     margin-bottom: 20px; /* Increased margin */
 }
 #game-mode-screen {
-    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 20px; /* Increased padding */
 }
 
@@ -97,9 +97,9 @@ h1, h2 {
     font-size: 1.2em; /* Increased font size */
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
     width: calc(50% - 15px); /* Adjusted width for 2 buttons per row with 15px gap */
-    flex-grow: 0; 
-    flex-shrink: 1; 
-    min-width: unset; 
+    flex-grow: 0;
+    flex-shrink: 1;
+    min-width: unset;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     min-height: 50px; /* Adjusted to match new padding/font-size */
     line-height: 1.2;
@@ -124,7 +124,7 @@ h1, h2 {
 /* Styling for 'Next' and 'Back' type buttons - usually full width or action-controls specific */
 .action-btn,
 .control-btn {
-    background-color: #2980b9; 
+    background-color: #2980b9;
     color: white;
     border: none;
     padding: 15px 30px; /* Increased padding */
@@ -150,14 +150,14 @@ h1, h2 {
 .game-controls .control-btn,
 .modal-buttons .control-btn {
     width: calc(50% - 15px); /* Adjusted width for 2 buttons per row with 15px gap */
-    max-width: unset; 
+    max-width: unset;
     margin: 0; /* Remove individual button margin, let gap handle it */
 }
 
 /* Group for Next/Back buttons to make them horizontal */
 .action-controls {
     display: flex;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
     justify-content: center;
     gap: 15px; /* Increased gap */
     width: 100%;
@@ -168,8 +168,8 @@ h1, h2 {
 .action-controls .action-btn,
 .action-controls .control-btn {
     width: calc(50% - 15px); /* Adjusted width for 2 buttons per row with 15px gap */
-    margin: 0; 
-    max-width: unset; 
+    margin: 0;
+    max-width: unset;
 }
 
 /* Hover effects for all standard blue buttons */
@@ -180,8 +180,8 @@ h1, h2 {
 .music-btn:hover,
 .action-btn:hover:not(:disabled),
 .control-btn:hover:not(:disabled) {
-    background-color: #3498db; 
-    transform: translateY(-3px); 
+    background-color: #3498db;
+    transform: translateY(-3px);
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -189,14 +189,14 @@ h1, h2 {
 .board-size-options button.selected,
 .game-mode-options button.selected,
 .difficulty-options button.selected {
-    background-color: #2ecc71; 
-    box-shadow: 0 0 15px rgba(46, 204, 113, 0.7); 
-    transform: scale(1.05); 
+    background-color: #2ecc71;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.7);
+    transform: scale(1.05);
 }
 
 /* Disabled button styling */
 button:disabled {
-    background-color: #5d6d7e; 
+    background-color: #5d6d7e;
     cursor: not-allowed;
     opacity: 0.7;
     transform: none;
@@ -213,8 +213,8 @@ button:disabled {
     background-color: #2c3e50;
     color: #ecf0f1;
     font-size: 1.2em; /* Increased font size */
-    box-sizing: border-box; 
-    text-align: right; 
+    box-sizing: border-box;
+    text-align: right;
 }
 
 .room-input::placeholder {
@@ -224,57 +224,57 @@ button:disabled {
 #game-board {
     display: grid;
     gap: 10px; /* Increased gap */
-    width: fit-content; 
+    width: fit-content;
     margin: 30px auto 40px auto; /* Increased margin-bottom */
-    border: 3px solid #7f8c8d; 
+    border: 3px solid #7f8c8d;
     border-radius: 15px; /* Slightly larger border-radius */
-    background-color: #616e7f; 
+    background-color: #616e7f;
     padding: 10px; /* Increased padding */
-    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4); 
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
 }
 
 .board-cell {
     width: 80px; /* Increased cell size */
     height: 80px; /* Increased cell size */
-    background-color: #4a4a4a; 
+    background-color: #4a4a4a;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 4em; /* Increased font size for symbols */
     font-weight: bold;
     cursor: pointer;
-    border: none; 
+    border: none;
     border-radius: 12px; /* Slightly larger border-radius */
     transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    color: #ecf0f1; 
-    user-select: none; 
-    position: relative; 
-    overflow: hidden; 
+    color: #ecf0f1;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .board-cell:hover:not(.occupied):not(.winner-cell) {
-    background-color: #5c5c5c; 
-    transform: scale(1.02); 
+    background-color: #5c5c5c;
+    transform: scale(1.02);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .board-cell.occupied {
     cursor: not-allowed;
-    background-color: #4a4a4a; 
+    background-color: #4a4a4a;
 }
 
 .board-cell.X { color: #e74c3c; }
 .board-cell.O { color: #3498db; }
 
 .board-cell.winner-cell {
-    background-color: #27ae60; 
-    color: white; 
-    animation: flashWin 0.8s infinite alternate; 
+    background-color: #27ae60;
+    color: white;
+    animation: flashWin 0.8s infinite alternate;
 }
 
 @keyframes flashWin {
     from { background-color: #27ae60; }
-    to { background-color: #2ecc71; } 
+    to { background-color: #2ecc71; }
 }
 
 .board-cell:active:not(.occupied) {
@@ -294,7 +294,7 @@ button:disabled {
     transform: translate(-50%, -50%) scale(0);
     animation: sparkle-burst 0.5s forwards;
     opacity: 0;
-    z-index: 1; 
+    z-index: 1;
 }
 
 @keyframes sparkle-burst {
@@ -303,11 +303,11 @@ button:disabled {
         opacity: 1;
     }
     50% {
-        transform: translate(-50%, 0) scale(1.5); 
+        transform: translate(-50%, 0) scale(1.5);
         opacity: 0.5;
     }
     100% {
-        transform: translate(-50%, 20px) scale(0); 
+        transform: translate(-50%, 20px) scale(0);
         opacity: 0;
     }
 }
@@ -322,17 +322,16 @@ button:disabled {
     justify-content: center;
     text-align: center;
     padding: 5px 0;
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+    /* تمت إزالة white-space: nowrap;, overflow: hidden;, text-overflow: ellipsis; هنا */
+    /* هذا سيسمح للنص بالالتفاف تلقائياً إذا كان أطول من المساحة المتاحة */
 }
 
 .selection-message {
     font-size: 1.1em; /* Increased font size */
     color: #bdc3c7;
     margin-bottom: 20px; /* Increased margin */
-    font-weight: bold; 
-    text-align: center; 
+    font-weight: bold;
+    text-align: center;
 }
 
 .timer-container {
@@ -355,18 +354,18 @@ button:disabled {
 }
 
 .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 100; 
+    display: none;
+    position: fixed;
+    z-index: 100;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.7); 
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.3s ease-out; 
+    animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
@@ -380,7 +379,7 @@ button:disabled {
     text-align: center;
     position: relative;
     color: #ecf0f1;
-    animation: slideIn 0.3s ease-out; 
+    animation: slideIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
@@ -395,7 +394,7 @@ button:disabled {
 
 .close-button {
     color: #aaa;
-    float: left; 
+    float: left;
     font-size: 40px; /* Increased font size */
     font-weight: bold;
     cursor: pointer;
@@ -414,14 +413,14 @@ button:disabled {
 #modal-title {
     font-size: 2em; /* Increased font size */
     margin-bottom: 20px; /* Increased margin */
-    color: #f1c40f; 
+    color: #f1c40f;
 }
 
 #modal-text {
     font-size: 1.2em; /* Increased font size */
     line-height: 1.6;
-    white-space: pre-wrap; 
-    text-align: justify; 
+    white-space: pre-wrap;
+    text-align: justify;
     margin-bottom: 25px; /* Increased margin */
 }
 
@@ -434,20 +433,20 @@ button:disabled {
 }
 
 .game-info-message .X {
-    color: #e74c3c; 
+    color: #e74c3c;
     font-weight: bold;
     font-size: 1.3em; /* Adjusted font size */
 }
 
 .game-info-message .O {
-    color: #3498db; 
+    color: #3498db;
     font-weight: bold;
     font-size: 1.3em; /* Adjusted font size */
 }
 
 
 /* Responsive adjustments for mobile and smaller desktop screens */
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
     .container {
         padding: 20px;
         max-width: 500px; /* Revert max width for smaller screens */
@@ -473,9 +472,9 @@ button:disabled {
     .difficulty-options button,
     .info-btn,
     .music-btn,
-    .game-controls .control-btn, 
-    .modal-buttons .control-btn { 
-        width: calc(50% - 10px); 
+    .game-controls .control-btn,
+    .modal-buttons .control-btn {
+        width: calc(50% - 10px);
         font-size: 1em;
         padding: 10px 15px;
         min-height: 45px; /* Ensure consistent height */
@@ -499,9 +498,9 @@ button:disabled {
     }
 
     .game-info-message {
-        font-size: 1.02em; 
+        font-size: 1.02em;
     }
-    
+
     .room-input {
         width: calc(100% - 20px);
         padding: 12px;
@@ -512,10 +511,17 @@ button:disabled {
     }
 
     .board-cell {
-        width: 70px; 
+        width: 70px;
         height: 70px;
         font-size: 3.5em;
         border-radius: 10px;
+    }
+
+    /* Responsive adjustments for 6x6 board specifically */
+    #game-board[style*="repeat(6"] .board-cell {
+        width: 50px; /* Smaller cells for 6x6 on medium screens */
+        height: 50px;
+        font-size: 2.2em; /* Adjust font size accordingly */
     }
 
     .selection-message {
@@ -557,18 +563,25 @@ button:disabled {
     }
 }
 
-@media (max-width: 480px) { 
+@media (max-width: 480px) {
     .board-cell {
-        width: 50px; 
+        width: 50px;
         height: 50px;
         font-size: 2.2em;
     }
+    /* Responsive adjustments for 6x6 board specifically on very small screens */
+    #game-board[style*="repeat(6"] .board-cell {
+        width: 38px; /* Even smaller cells for 6x6 on small screens */
+        height: 38px;
+        font-size: 1.8em; /* Adjust font size accordingly */
+    }
+
     .container {
         padding: 10px;
         border-radius: 0;
     }
     .game-section {
-        gap: 10px; 
+        gap: 10px;
     }
     /* Unified styling for all standard blue buttons stacked */
     .board-size-options button,
@@ -579,11 +592,11 @@ button:disabled {
     .control-btn,
     .game-controls .control-btn,
     .modal-buttons .control-btn,
-    .action-controls .action-btn, 
+    .action-controls .action-btn,
     .action-controls .control-btn,
     .music-btn {
-        width: 100%; 
-        margin: 5px 0; 
+        width: 100%;
+        margin: 5px 0;
         min-width: unset;
         min-height: 45px; /* Ensure consistent height */
         padding: 10px 15px;
@@ -598,9 +611,9 @@ button:disabled {
     .timer-text {
         font-size: 1.1em;
     }
-    
+
     .game-info-message {
-        font-size: 0.92em; 
+        font-size: 1.2em;
     }
 
     .room-input {
