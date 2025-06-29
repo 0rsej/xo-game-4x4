@@ -9,7 +9,9 @@ body {
     color: #ecf0f1; /* Light gray for text */
     direction: rtl; /* Right-to-left for Arabic */
     text-align: center;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    padding: 20px 0; /* Add some vertical padding for smaller screens */
+    box-sizing: border-box;
 }
 
 .container {
@@ -17,94 +19,228 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 500px;
+    width: 95%; /* Adjust width for better mobile fit */
+    max-width: 500px; /* Still limit max width for readability */
     text-align: center;
     box-sizing: border-box;
+    margin: auto; /* Center container */
 }
 
 h1, h2 {
     color: #ecf0f1;
     margin-bottom: 20px;
+    font-weight: 700; /* Bold headings */
 }
 
-.game-settings, .game-area, .info-section {
-    margin-bottom: 25px;
+.game-section {
+    padding: 15px 0;
+    margin-bottom: 15px;
+    display: flex; /* Use flex for vertical stacking */
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    gap: 15px; /* Gap between direct children of game-section (e.g., text, button groups, single buttons) */
+}
+.game-section:last-of-type {
+    margin-bottom: 0;
 }
 
+/* Specific styling for sections to add separators */
+#initial-screen .info-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+#game-mode-screen, #ai-difficulty-screen, #room-screen { /* UPDATED: Added #room-screen */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+#game-mode-screen {
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Add top border for game mode screen */
+    padding-top: 15px;
+}
+
+/* --- Button Group Styling (2 columns on all screens if space, stacks on very small) --- */
+.board-size-options,
+.game-mode-options,
+.difficulty-options,
+.info-section,
+.modal-buttons,
+.game-controls,
+.room-options { /* NEW: Added .room-options */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    width: 100%; /* Take full width of parent */
+    max-width: 360px; /* Limit max width of the button group itself */
+    margin-left: auto; /* Center the button group */
+    margin-right: auto; /* Center the button group */
+}
+
+/* Base button styling */
 .board-size-options button,
 .game-mode-options button,
-.control-btn,
+.difficulty-options button,
 .info-btn {
     background-color: #2980b9; /* Blue */
     color: white;
     border: none;
-    padding: 12px 25px;
-    margin: 8px;
+    padding: 12px 15px; /* Slightly reduced horizontal padding for better fit */
+    margin: 0;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    width: auto;
-    min-width: 150px; /* Ensure consistent button size */
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    width: calc(50% - 10px); /* Two buttons per row with 10px gap */
+    flex-grow: 0; /* Don't grow excessively */
+    flex-shrink: 1; /* Allow shrinking */
+    min-width: unset; /* Remove min-width to allow more flexibility */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.board-size-options button:hover,
-.game-mode-options button:hover,
-.control-btn:hover,
-.info-btn:hover {
-    background-color: #3498db; /* Lighter blue on hover */
-    transform: translateY(-2px);
+/* Styling for 'Next' and 'Back' type buttons - single column by default */
+.action-btn,
+.control-btn {
+    background-color: #2980b9; /* Blue */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    width: calc(100% - 20px); /* Full width minus padding for container */
+    max-width: 250px; /* Max width for single buttons */
+    margin: 10px auto; /* Center with auto margins and add vertical space */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.board-size-options,
-.game-mode-options {
+/* Special case for control buttons that should appear in 2 columns within a flex group */
+.game-controls .control-btn,
+.modal-buttons .control-btn {
+    width: calc(50% - 10px); /* Two buttons per row with 10px gap */
+    max-width: unset; /* Override single button max-width */
+    margin: 0; /* Rely on parent gap */
+}
+
+/* New: Group for Next/Back buttons to make them horizontal */
+.action-controls {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 10px; /* Space between buttons */
+    width: 100%;
+    max-width: 400px; /* Adjust max-width as needed */
+    margin: 10px auto; /* Center the group */
+}
+
+.action-controls .action-btn,
+.action-controls .control-btn {
+    width: calc(50% - 10px); /* Make each button half width */
+    margin: 0; /* Remove individual margins as parent flex handles spacing */
+    max-width: unset; /* Remove max-width constraint for these buttons */
+}
+
+/* Hover effects */
+.board-size-options button:hover:not(.selected),
+.game-mode-options button:hover:not(.selected):not(:disabled),
+.difficulty-options button:hover:not(.selected),
+.info-btn:hover,
+.action-btn:hover:not(:disabled),
+.control-btn:hover:not(:disabled) {
+    background-color: #3498db; /* Lighter blue on hover */
+    transform: translateY(-3px); /* Lift effect */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Selected button styling */
+.board-size-options button.selected,
+.game-mode-options button.selected,
+.difficulty-options button.selected {
+    background-color: #2ecc71; /* Green for selected button */
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.7); /* Green glow */
+    transform: scale(1.05); /* Slightly larger when selected */
+}
+
+/* Disabled button styling */
+button:disabled {
+    background-color: #5d6d7e; /* Darker gray for disabled */
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+/* NEW: Room input fields styling */
+.room-input {
+    width: calc(100% - 20px); /* Full width minus padding */
+    max-width: 300px;
+    padding: 12px;
+    margin-bottom: 15px; /* Space between inputs */
+    border: 1px solid #7f8c8d;
+    border-radius: 8px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1.1em;
+    box-sizing: border-box; /* Include padding in width */
+    text-align: right; /* Align text to the right for Arabic */
+}
+
+.room-input::placeholder {
+    color: #bdc3c7;
 }
 
 #game-board {
     display: grid;
-    gap: 5px;
-    width: fit-content;
+    gap: 8px; /* Increased gap for better visual separation */
+    width: fit-content; /* Adjusts to content size */
     margin: 20px auto;
     border: 3px solid #7f8c8d; /* Darker gray for board border */
-    border-radius: 5px;
+    border-radius: 12px; /* More rounded corners for the board */
     background-color: #616e7f; /* Slightly darker than main container */
-    padding: 5px;
+    padding: 8px; /* Padding matches gap */
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4); /* Inner shadow for depth */
 }
 
 .board-cell {
     width: 70px; /* Larger cells */
     height: 70px;
-    background-color: #95a5a6; /* Medium gray */
+    background-color: #4a4a4a; /* Darker gray for cells, matching screenshot */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 3em; /* Larger symbols */
+    font-size: 3.5em; /* Even larger symbols */
     font-weight: bold;
     cursor: pointer;
-    border: 1px solid #7f8c8d;
-    border-radius: 5px;
-    transition: background-color 0.1s ease;
-    color: #2c3e50; /* Dark text for symbols */
+    border: none; /* No individual cell border */
+    border-radius: 10px; /* Rounded cell corners, matching screenshot */
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    color: #ecf0f1; /* Light text for symbols */
+    user-select: none; /* Prevent text selection on cells */
+    position: relative; /* For sparkle effect */
+    overflow: hidden; /* Hide overflow from sparkles */
 }
 
 .board-cell:hover:not(.occupied):not(.winner-cell) {
-    background-color: #bdc3c7; /* Lighter gray on hover for empty cells */
+    background-color: #5c5c5c; /* Lighter gray on hover for empty cells */
+    transform: scale(1.02); /* Slight zoom on hover */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .board-cell.occupied {
     cursor: not-allowed;
+    background-color: #4a4a4a; /* Keep dark background for occupied */
 }
 
-/* Winner line styling */
+/* Specific styling for symbols */
+.board-cell.X { color: #e74c3c; /* Red for X */ }
+.board-cell.O { color: #3498db; /* Blue for O */ }
+
+/* Winning line styling */
 .board-cell.winner-cell {
     background-color: #27ae60; /* Green for winning line */
-    color: white;
+    color: white; /* White symbol on green background */
     animation: flashWin 0.8s infinite alternate; /* Flash effect */
 }
 
@@ -113,21 +249,88 @@ h1, h2 {
     to { background-color: #2ecc71; } /* Lighter green */
 }
 
+/* Click animation for any cell */
+.board-cell:active:not(.occupied) {
+    transform: scale(0.95);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
 
+/* Sparkle effect */
+.board-cell.sparkle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8), transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: sparkle-burst 0.5s forwards;
+    opacity: 0;
+    z-index: 1; /* Ensure it's above the cell content */
+}
+
+@keyframes sparkle-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, 0) scale(1.5); /* Moves slightly down and expands */
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(-50%, 20px) scale(0); /* Falls further and fades */
+        opacity: 0;
+    }
+}
+
+
+/* MODIFIED: game-info-message styling for better mobile display */
 .game-info-message {
-    font-size: 1.1em;
+    font-size: 1.1em; /* Baseline font size for game info */
     font-weight: bold;
     color: #ecf0f1;
-    min-height: 2em; /* To prevent layout shift */
+    min-height: 2.5em; /* Increased height to prevent layout shift */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5px 0;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflowing content */
+    text-overflow: ellipsis; /* Show ellipsis for overflowed text */
 }
 
-.game-controls {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
+.selection-message {
+    font-size: 1em;
+    color: #bdc3c7;
+    margin-bottom: 15px;
+    font-weight: bold; /* Make it bold for clarity */
+    text-align: center; /* Ensure it's centered */
 }
+
+/* Numerical Turn Timer */
+.timer-container {
+    margin-bottom: 10px;
+    height: 35px; /* Fixed height for timer */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.timer-text {
+    font-size: 1.6em; /* Larger font size */
+    font-weight: bold;
+    color: #ecf0f1;
+    min-width: 50px; /* Ensure space for digits and 'ثوانٍ' */
+    text-align: center;
+}
+
 
 /* Modal styling */
 .modal {
@@ -142,6 +345,7 @@ h1, h2 {
     background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
     justify-content: center;
     align-items: center;
+    animation: fadeIn 0.3s ease-out; /* Fade in effect */
 }
 
 .modal-content {
@@ -155,6 +359,17 @@ h1, h2 {
     text-align: center;
     position: relative;
     color: #ecf0f1;
+    animation: slideIn 0.3s ease-out; /* Slide in effect */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .close-button {
@@ -166,6 +381,7 @@ h1, h2 {
     position: absolute;
     top: 10px;
     left: 20px;
+    transition: color 0.2s ease;
 }
 
 .close-button:hover,
@@ -188,52 +404,113 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
-#modal-back-btn, #modal-main-menu-btn {
+.modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
     margin-top: 15px;
-    background-color: #2980b9;
-    width: fit-content;
-    padding: 10px 20px;
-    font-size: 0.95em;
 }
 
-#modal-back-btn:hover, #modal-main-menu-btn:hover {
-    background-color: #3498db;
+/* Styling for X and O symbols within text messages */
+.game-info-message .X {
+    color: #e74c3c; /* Red for X */
+    font-weight: bold;
+    font-size: 1.2em; /* Slightly larger X for prominence */
+}
+
+.game-info-message .O {
+    color: #3498db; /* Blue for O */
+    font-weight: bold;
+    font-size: 1.2em; /* Slightly larger O for prominence */
 }
 
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    .board-cell {
-        width: 55px; /* Smaller cells on small screens */
-        height: 55px;
-        font-size: 2.2em;
-    }
+/* Responsive adjustments for mobile and smaller desktop screens */
+/* This will make most button groups appear in 2 columns by default on most screens */
+@media (max-width: 768px) { /* Apply to tablets and mobiles */
     .container {
         padding: 20px;
     }
+    /* Buttons in groups (size, mode, difficulty, info) will be 2 columns */
     .board-size-options button,
     .game-mode-options button,
-    .control-btn,
-    .info-btn {
-        width: 100%; /* Full width buttons on small screens */
-        margin: 5px 0;
+    .difficulty-options button,
+    .info-btn,
+    .game-controls .control-btn, /* Apply this also to control buttons within game-controls group */
+    .modal-buttons .control-btn { /* And modal buttons group */
+        width: calc(50% - 10px); /* Two buttons per row with 10px gap */
+        font-size: 1em;
+        padding: 10px 15px;
     }
-    .modal-content {
-        width: 95%;
-        padding: 20px;
+
+    /* Action controls for Next/Back buttons - 2 columns */
+    .action-controls .action-btn,
+    .action-controls .control-btn {
+        width: calc(50% - 10px);
+        font-size: 1em;
+        padding: 10px 15px;
     }
-    #modal-title {
-        font-size: 1.5em;
+
+    /* Smaller font for game info on smaller screens */
+    .game-info-message {
+        font-size: 1.02em; /* Adjusted for slightly smaller text on 768px screens */
     }
-    #modal-text {
-        font-size: 0.95em;
+    
+    /* NEW: Room inputs also respond to 2 columns if in a flex group */
+    .room-input {
+        width: calc(100% - 20px); /* Adjust to full width within its container */
     }
+
 }
 
-/* Specific styling for symbols */
-.board-cell.X { color: #e74c3c; /* Red for X */ }
-.board-cell.O { color: #3498db; /* Blue for O */ }
+/* For very small screens, stack all buttons vertically */
+@media (max-width: 480px) { /* Adjusted breakpoint for better stacking */
+    .board-cell {
+        width: 50px; /* Slightly smaller cells for very small screens */
+        height: 50px;
+        font-size: 2.2em;
+    }
+    .container {
+        padding: 10px;
+        border-radius: 0;
+    }
+    .board-size-options button,
+    .game-mode-options button,
+    .difficulty-options button,
+    .info-btn,
+    .action-btn,
+    .control-btn,
+    .game-controls .control-btn,
+    .modal-buttons .control-btn,
+    .action-controls .action-btn, /* Apply to action controls as well */
+    .action-controls .control-btn { /* Apply to action controls as well */
+        width: 100%; /* Stack all buttons vertically */
+        margin: 5px 0; /* Add vertical margin */
+        min-width: unset;
+    }
+    .game-section {
+        gap: 10px; /* Smaller gap when stacking */
+    }
+    #modal-title {
+        font-size: 1.3em;
+    }
+    #modal-text {
+        font-size: 0.9em;
+    }
+    .timer-text {
+        font-size: 1.1em;
+    }
+    
+    /* Even smaller font for game info on very small screens */
+    .game-info-message {
+        font-size: 0.92em; /* Further reduced font size for 480px screens */
+    }
 
-/* Winning line color for symbols */
-.board-cell.X.winner-cell { color: white; }
-.board-cell.O.winner-cell { color: white; }
+    /* NEW: Room inputs also stack vertically */
+    .room-input {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

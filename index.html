@@ -11,35 +11,79 @@
     <div class="container">
         <h1>لعبة XO الاحترافية 🎮</h1>
         
-        <div class="game-settings">
-            <h2>اختر حجم اللوحة</h2>
+        <div id="initial-screen" class="game-section">
+            <h2>اختر لوحة اللعب</h2>
             <div class="board-size-options">
                 <button data-size="3">3x3</button>
                 <button data-size="4">4x4</button>
                 <button data-size="5">5x5</button>
             </div>
+            <p id="size-selection-message" class="selection-message">لم يتم اختيار لوحة بعد.</p>
+            <div class="action-controls">
+                <button id="next-btn" class="action-btn" disabled>التالي</button>
+            </div>
 
-            <h2 id="game-mode-heading" style="display:none;">اختر طريقة اللعب:</h2>
-            <div class="game-mode-options" style="display:none;">
-                <button data-mode="single_player">👤 العب مع نفسي</button>
-                <button data-mode="vs_bot">🤖 العب ضد الذكاء الاصطناعي</button>
-                </div>
+            <div class="info-section">
+                <button id="show-rules-btn" class="info-btn">❓ قواعد اللعبة</button>
+                <button id="show-leaderboard-btn" class="info-btn">📈 لوحة المتصدرين</button>
+                <button id="show-stats-btn" class="info-btn">📊 إحصائياتي</button>
+            </div>
         </div>
 
-        <div class="game-area" style="display:none;">
+        <div id="game-mode-screen" class="game-section" style="display:none;">
+            <p id="mode-selection-message" class="selection-message"></p>
+            <h2>اختر طريقة اللعب:</h2>
+            <div class="game-mode-options">
+                <button data-mode="local_multiplayer">👥 لاعبان (نفس الجهاز)</button> <button data-mode="vs_bot">🤖 العب ضد الذكاء الاصطناعي</button>
+                <button data-mode="online_multiplayer" disabled title="قيد التطوير">🌐 لاعبان (عبر الإنترنت)</button> <button data-mode="online_room" disabled title="قيد التطوير">🎛️ إنشاء/انضمام لغرفة</button> </div>
+            <div class="action-controls">
+                <button id="next-mode-btn" class="action-btn" disabled>التالي</button>
+                <button id="back-to-initial-btn" class="control-btn">🔙 رجوع</button>
+            </div>
+        </div>
+
+        <div id="ai-difficulty-screen" class="game-section" style="display:none;">
+            <h2>اختر مستوى صعوبة الذكاء الاصطناعي:</h2>
+            <div class="difficulty-options">
+                <button data-difficulty="easy">سهل 👶</button>
+                <button data-difficulty="medium">متوسط 🧠</button>
+                <button data-difficulty="impossible">صعب (لا يهزم) 🤖</button>
+            </div>
+            <p id="difficulty-note" class="selection-message" style="display:none;"></p> 
+            <div class="action-controls">
+                <button id="next-difficulty-btn" class="action-btn" disabled>التالي</button> 
+                <button id="back-to-mode-btn" class="control-btn">🔙 رجوع</button>
+            </div>
+        </div>
+
+        <div id="room-screen" class="game-section" style="display:none;">
+            <h2>إنشاء أو الانضمام لغرفة</h2>
+            <p class="selection-message">هذه الميزة قيد التطوير حالياً، ولكن يمكنك استكشاف الواجهة.</p>
+            <div class="room-options">
+                <input type="text" id="player-name-input" placeholder="اسمك المستعار" class="room-input">
+                <input type="text" id="room-code-input" placeholder="رمز الغرفة (مثال: 12345)" class="room-input">
+            </div>
+            <div class="action-controls">
+                <button id="create-room-btn" class="action-btn" disabled title="قيد التطوير">إنشاء غرفة</button>
+                <button id="join-room-btn" class="action-btn" disabled title="قيد التطوير">الانضمام لغرفة</button>
+            </div>
+            <div class="action-controls">
+                <button id="back-to-mode-from-room-btn" class="control-btn">🔙 رجوع</button>
+                <button id="back-to-main-menu-from-room-btn" class="control-btn">🏠 القائمة الرئيسية</button>
+            </div>
+        </div>
+        <div id="game-screen" class="game-section" style="display:none;">
+            <div class="timer-container">
+                <span id="countdown-timer" class="timer-text"></span>
+            </div>
             <p id="game-info" class="game-info-message">اختر حجماً وطريقة لعب للبدء.</p>
             <div id="game-board" class="game-board">
                 </div>
             <div class="game-controls">
                 <button id="restart-btn" class="control-btn" style="display:none;">♻️ العب مرة أخرى</button>
-                <button id="back-to-settings-btn" class="control-btn">🔙 تغيير حجم اللوحة</button>
+                <button id="back-to-mode-from-game-btn" class="control-btn">🔙 رجوع</button>
+                <button id="back-to-main-menu-from-game-btn" class="control-btn">🏠 القائمة الرئيسية</button>
             </div>
-        </div>
-
-        <div class="info-section">
-            <button id="show-rules-btn" class="info-btn">❓ قواعد اللعبة</button>
-            <button id="show-leaderboard-btn" class="info-btn">📈 لوحة المتصدرين</button>
-            <button id="show-stats-btn" class="info-btn">📊 إحصائياتي</button>
         </div>
 
         <div id="modal" class="modal" style="display:none;">
@@ -47,8 +91,10 @@
                 <span class="close-button">&times;</span>
                 <h3 id="modal-title"></h3>
                 <p id="modal-text"></p>
-                <button id="modal-back-btn" class="control-btn" style="display:none;">🔙 رجوع</button>
-                <button id="modal-main-menu-btn" class="control-btn">🏠 العودة للقائمة الرئيسية</button>
+                <div class="modal-buttons">
+                    <button id="modal-back-btn" class="control-btn">🔙 رجوع</button>
+                    <button id="modal-main-menu-btn" class="control-btn">🏠 القائمة الرئيسية</button>
+                </div>
             </div>
         </div>
     </div>

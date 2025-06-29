@@ -1,209 +1,213 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- UI Elements ---
+    const initialScreen = document.getElementById('initial-screen');
+    const gameModeScreen = document.getElementById('game-mode-screen');
+    const aiDifficultyScreen = document.getElementById('ai-difficulty-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const roomScreen = document.getElementById('room-screen'); 
+
     const boardSizeOptions = document.querySelector('.board-size-options');
+    const sizeSelectionMessage = document.getElementById('size-selection-message');
+    const nextBtn = document.getElementById('next-btn'); 
+
+    const modeSelectionMessage = document.getElementById('mode-selection-message');
     const gameModeOptions = document.querySelector('.game-mode-options');
-    const gameModeHeading = document.getElementById('game-mode-heading');
-    const gameArea = document.querySelector('.game-area');
+    const nextModeBtn = document.getElementById('next-mode-btn'); 
+    const backToInitialBtn = document.getElementById('back-to-initial-btn');
+
+    const difficultyOptions = document.querySelector('.difficulty-options');
+    const difficultyNote = document.getElementById('difficulty-note'); 
+    const nextDifficultyBtn = document.getElementById('next-difficulty-btn'); 
+    const backToModeBtn = document.getElementById('back-to-mode-btn');
+
+    const playerNameInput = document.getElementById('player-name-input');
+    const roomCodeInput = document.getElementById('room-code-input');
+    const createRoomBtn = document.getElementById('create-room-btn');
+    const joinRoomBtn = document.getElementById('join-room-btn');
+    const backToModeFromRoomBtn = document.getElementById('back-to-mode-from-room-btn');
+    const backToMainMenuFromRoomBtn = document.getElementById('back-to-main-menu-from-room-btn');
+
     const gameBoardDiv = document.getElementById('game-board');
     const gameInfo = document.getElementById('game-info');
     const restartBtn = document.getElementById('restart-btn');
-    const backToSettingsBtn = document.getElementById('back-to-settings-btn');
+    const backToModeFromGameBtn = document.getElementById('back-to-mode-from-game-btn');
+    const backToMainMenuFromGameBtn = document.getElementById('back-to-main-menu-from-game-btn');
+
+    const countdownTimerDisplay = document.getElementById('countdown-timer');
+    let turnTimerInterval; 
+    let turnStartTime; 
+    let turnTimerCountdown; 
+
     const showRulesBtn = document.getElementById('show-rules-btn');
     const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
     const showStatsBtn = document.getElementById('show-stats-btn');
 
-    // Modal elements
     const modal = document.getElementById('modal');
+    const closeModalBtn = modal.querySelector('.close-button');
     const modalTitle = document.getElementById('modal-title');
     const modalText = document.getElementById('modal-text');
-    const closeModalBtn = document.querySelector('.close-button');
     const modalBackBtn = document.getElementById('modal-back-btn');
     const modalMainMenuBtn = document.getElementById('modal-main-menu-btn');
 
-    // Game state variables
-    let board = [];
-    let boardSize = 0;
-    let currentPlayer = 'X';
-    let gameActive = false;
-    let gameType = ''; // 'single_player', 'vs_bot'
-    const EMPTY = "⬜";
-    const X_SYMBOL = "❌";
-    const O_SYMBOL = "⭕";
+    // --- Game State Variables ---
+    const EMPTY_CELL = ' '; 
+    const PLAYER_SYMBOLS = { 'X': 'X', 'O': 'O' }; 
     const WIN_EMOJI = '🏆';
     const DRAW_EMOJI = '🤝';
-    const TIMEOUT_EMOJI = '⏳'; // Not directly used in web game as no real timeout
-    const WIN_LINE_COLOR_CLASS = 'winner-cell'; // CSS class for winning line
+    
+    const PLAYER_NAME_MAP = { 
+        'X': 'أنت', 
+        'O': 'الذكاء الاصطناعي 🤖' 
+    }; 
+    const LOCAL_MULTIPLAYER_NAME_MAP = { 
+        'X': 'اللاعب 1', 
+        'O': 'اللاعب 2' 
+    }; 
 
-    const PLAYER_SYMBOLS = {
-        'X': X_SYMBOL,
-        'O': O_SYMBOL
-    };
+    let currentBoardSize = 0; 
+    let currentBoard = [];
+    let currentPlayer = PLAYER_SYMBOLS.X;
+    let gameActive = false;
+    let selectedGameMode = ''; 
+    let selectedAIDifficulty = ''; 
+    const WIN_LENGTH_3X3 = 3;
+    const WIN_LENGTH_4X4_5X5 = 4;
+    const DEFAULT_TURN_TIME = 30; 
 
-    // --- Utility Functions ---
-    function checkWin(currentBoard, playerSymbol, currentBoardSize) {
-        const winLength = currentBoardSize === 3 ? 3 : 4;
-        const winningCells = [];
+    // --- Player Stats (for single player) ---
+    let playerStats = JSON.parse(localStorage.getItem('playerStats')) || { wins: 0, losses: 0, draws: 0 };
+    // DELETED: Dummy leaderboard data is removed.
+    let leaderboardData = []; // Initialize as empty array. Leaderboard will only reflect 'أنت' data if added there.
 
-        // Check rows
-        for (let r = 0; r < currentBoardSize; r++) {
-            for (let c = 0; c <= currentBoardSize - winLength; c++) {
-                let rowWin = true;
-                for (let k = 0; k < winLength; k++) {
-                    if (currentBoard[r][c + k] !== playerSymbol) {
-                        rowWin = false;
-                        break;
-                    }
-                }
-                if (rowWin) {
-                    for (let k = 0; k < winLength; k++) winningCells.push([r, c + k]);
-                    return winningCells;
+    let aiWorker;
+    if (window.Worker) {
+        aiWorker = new Worker('xo-ai-worker.js');
+        aiWorker.onmessage = function(e) {
+            const bestMove = e.data; 
+            if (gameActive && selectedGameMode === 'vs_bot' && currentPlayer === PLAYER_SYMBOLS.O) {
+                if (bestMove) {
+                    const [row, col] = bestMove;
+                    makeMove(row, col); 
+                } else {
+                    console.error("AI Worker returned no move.");
+                    endGame(null); 
                 }
             }
-        }
-
-        // Check columns
-        for (let c = 0; c < currentBoardSize; c++) {
-            for (let r = 0; r <= currentBoardSize - winLength; r++) {
-                let colWin = true;
-                for (let k = 0; k < winLength; k++) {
-                    if (currentBoard[r + k][c] !== playerSymbol) {
-                        colWin = false;
-                        break;
-                    }
-                }
-                if (colWin) {
-                    for (let k = 0; k < winLength; k++) winningCells.push([r + k, c]);
-                    return winningCells;
-                }
-            }
-        }
-
-        // Check diagonals (top-left to bottom-right)
-        for (let r = 0; r <= currentBoardSize - winLength; r++) {
-            for (let c = 0; c <= currentBoardSize - winLength; c++) {
-                let diagWin = true;
-                for (let k = 0; k < winLength; k++) {
-                    if (currentBoard[r + k][c + k] !== playerSymbol) {
-                        diagWin = false;
-                        break;
-                    }
-                }
-                if (diagWin) {
-                    for (let k = 0; k < winLength; k++) winningCells.push([r + k, c + k]);
-                    return winningCells;
-                }
-            }
-        }
-
-        // Check anti-diagonals (top-right to bottom-left)
-        for (let r = 0; r <= currentBoardSize - winLength; r++) {
-            for (let c = winLength - 1; c < currentBoardSize; c++) {
-                let antiDiagWin = true;
-                for (let k = 0; k < winLength; k++) {
-                    if (currentBoard[r + k][c - k] !== playerSymbol) {
-                        antiDiagWin = false;
-                        break;
-                    }
-                }
-                if (antiDiagWin) {
-                    for (let k = 0; k < winLength; k++) winningCells.push([r + k, c - k]);
-                    return winningCells;
-                }
-            }
-        }
-        return null;
+        };
+        aiWorker.onerror = function(error) {
+            console.error("AI Worker error:", error);
+            updateGameInfo("حدث خطأ في الذكاء الاصطناعي. يرجى إعادة تحميل الصفحة.");
+            endGame(null);
+        };
+    } else {
+        console.warn("Web Workers are not supported in this browser. AI might be slower.");
     }
 
-    function checkDraw(currentBoard, currentBoardSize) {
-        for (let r = 0; r < currentBoardSize; r++) {
-            for (let c = 0; c < currentBoardSize; c++) {
-                if (currentBoard[r][c] === ' ') {
-                    return false; // Still empty cells
-                }
-            }
-        }
-        // No empty cells, check if there's a winner
-        return !checkWin(currentBoard, 'X', currentBoardSize) && !checkWin(currentBoard, 'O', currentBoardSize);
+    // --- Screen Management Functions ---
+    function hideAllScreens() {
+        initialScreen.style.display = 'none';
+        gameModeScreen.style.display = 'none';
+        aiDifficultyScreen.style.display = 'none';
+        gameScreen.style.display = 'none';
+        roomScreen.style.display = 'none'; 
+        modal.style.display = 'none'; 
     }
 
-    function getOpponentSymbol(symbol) {
-        return symbol === 'X' ? 'O' : 'X';
+    function showInitialScreen() {
+        hideAllScreens();
+        initialScreen.style.display = 'block';
+        nextBtn.disabled = true; 
+        sizeSelectionMessage.textContent = 'لم يتم اختيار لوحة بعد.';
+        document.querySelectorAll('.board-size-options button').forEach(button => {
+            button.classList.remove('selected');
+        });
+        currentBoardSize = 0; 
+        clearInterval(turnTimerInterval); 
+        countdownTimerDisplay.textContent = ''; 
+        restartBtn.style.display = 'none'; 
     }
 
-    function getBotMove() {
-        const availableMoves = [];
-        for (let r = 0; r < boardSize; r++) {
-            for (let c = 0; c < boardSize; c++) {
-                if (board[r][c] === ' ') {
-                    availableMoves.push([r, c]);
-                }
-            }
-        }
-
-        if (availableMoves.length === 0) return null;
-
-        // 1. Check for winning move for bot
-        let winningMove = findWinningMove(board, 'O', boardSize);
-        if (winningMove) return winningMove;
-
-        // 2. Block human's winning move
-        let blockingMove = findWinningMove(board, 'X', boardSize);
-        if (blockingMove) return blockingMove;
-
-        // 3. Take center cells
-        const centerCells = [];
-        if (boardSize % 2 === 0) {
-            const mid = boardSize / 2;
-            centerCells.push([mid - 1, mid - 1], [mid - 1, mid], [mid, mid - 1], [mid, mid]);
-        } else {
-            const mid = Math.floor(boardSize / 2);
-            centerCells.push([mid, mid]);
-        }
-        // Shuffle center cells to add randomness
-        for (let i = centerCells.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [centerCells[i], centerCells[j]] = [centerCells[j], centerCells[i]];
-        }
-        for (const [r, c] of centerCells) {
-            if (board[r][c] === ' ') return [r, c];
-        }
-
-        // 4. Take corner cells
-        const cornerCells = [[0, 0], [0, boardSize - 1], [boardSize - 1, 0], [boardSize - 1, boardSize - 1]];
-        // Shuffle corner cells
-        for (let i = cornerCells.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [cornerCells[i], cornerCells[j]] = [cornerCells[j], cornerCells[i]];
-        }
-        for (const [r, c] of cornerCells) {
-            if (board[r][c] === ' ') return [r, c];
-        }
-
-        // 5. Take a random available move
-        return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    function showGameModeScreen() {
+        hideAllScreens();
+        gameModeScreen.style.display = 'block';
+        nextModeBtn.disabled = true; 
+        modeSelectionMessage.textContent = `لقد اخترت لوحة بحجم ${currentBoardSize}x${currentBoardSize}. الآن اختر طريقة اللعب:`;
+        document.querySelectorAll('.game-mode-options button').forEach(button => {
+            button.classList.remove('selected');
+        });
+        selectedGameMode = ''; 
     }
 
-    // --- Game Logic ---
-    function initializeBoard(size) {
-        boardSize = size;
-        board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(' '));
-        currentPlayer = 'X';
+    function showAIDifficultyScreen() {
+        hideAllScreens();
+        aiDifficultyScreen.style.display = 'block';
+        nextDifficultyBtn.disabled = true; 
+        difficultyNote.style.display = 'block'; 
+        difficultyNote.textContent = 'اختر مستوى صعوبة الذكاء الاصطناعي الذي يناسبك.'; 
+        document.querySelectorAll('.difficulty-options button').forEach(button => {
+            button.classList.remove('selected');
+        });
+        selectedAIDifficulty = ''; 
+    }
+
+    function showRoomScreen() {
+        hideAllScreens();
+        roomScreen.style.display = 'block';
+        playerNameInput.value = '';
+        roomCodeInput.value = '';
+    }
+
+    function showGameScreen() {
+        hideAllScreens();
+        gameScreen.style.display = 'block';
+        initializeGame();
+    }
+
+    function showModalScreen(title, content) {
+        modal.style.display = 'flex'; 
+        modalTitle.textContent = title;
+        modalText.innerHTML = content;
+    }
+
+    // --- Game Logic Functions ---
+    function initializeGame() {
+        if (currentBoardSize === 0) {
+            updateGameInfo("خطأ: لم يتم اختيار حجم لوحة اللعب. يرجى العودة للبداية.");
+            return;
+        }
+
+        currentBoard = Array(currentBoardSize).fill(null).map(() => Array(currentBoardSize).fill(EMPTY_CELL));
+        currentPlayer = PLAYER_SYMBOLS.X; 
         gameActive = true;
+        restartBtn.style.display = 'none'; 
         renderBoard();
-        updateGameInfo("✨ الدور الآن لـ (❌) أنت."); // Initial player is always X (human)
-        restartBtn.style.display = 'none'; // Hide restart initially
+        
+        let currentPlayerNameMap;
+        if (selectedGameMode === 'vs_bot') {
+            currentPlayerNameMap = PLAYER_NAME_MAP;
+        } else if (selectedGameMode === 'local_multiplayer') {
+            currentPlayerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
+        } else {
+            currentPlayerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+        }
+        updateGameInfo(`اللاعب الحالي: ${currentPlayerNameMap[currentPlayer]} (<span class="${currentPlayer}">${PLAYER_SYMBOLS[currentPlayer]}</span>)`);
+        resetTurnTimer();
     }
 
     function renderBoard() {
-        gameBoardDiv.innerHTML = '';
-        gameBoardDiv.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+        gameBoardDiv.innerHTML = ''; 
+        gameBoardDiv.style.gridTemplateColumns = `repeat(${currentBoardSize}, 1fr)`;
 
-        for (let r = 0; r < boardSize; r++) {
-            for (let c = 0; c < boardSize; c++) {
+        for (let r = 0; r < currentBoardSize; r++) {
+            for (let c = 0; c < currentBoardSize; c++) {
                 const cell = document.createElement('div');
                 cell.classList.add('board-cell');
                 cell.dataset.row = r;
                 cell.dataset.col = c;
-                cell.textContent = EMPTY; // Default empty symbol
+                cell.textContent = currentBoard[r][c] === EMPTY_CELL ? '' : currentBoard[r][c]; 
+                cell.classList.toggle('occupied', currentBoard[r][c] !== EMPTY_CELL);
+                cell.classList.toggle('X', currentBoard[r][c] === PLAYER_SYMBOLS.X);
+                cell.classList.toggle('O', currentBoard[r][c] === PLAYER_SYMBOLS.O);
 
                 cell.addEventListener('click', () => handleCellClick(r, c));
                 gameBoardDiv.appendChild(cell);
@@ -211,226 +215,367 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateBoardDisplay() {
-        const cells = gameBoardDiv.children;
+    function handleCellClick(row, col) {
+        if (!gameActive || currentBoard[row][col] !== EMPTY_CELL || (selectedGameMode === 'vs_bot' && currentPlayer === PLAYER_SYMBOLS.O)) {
+            return; 
+        }
+
+        makeMove(row, col);
+    }
+
+    function makeMove(row, col) {
+        const clickedCell = gameBoardDiv.children[row * currentBoardSize + col];
+        clickedCell.classList.add('sparkle');
+        clickedCell.addEventListener('animationend', () => {
+            clickedCell.classList.remove('sparkle');
+        }, { once: true });
+
+
+        currentBoard[row][col] = currentPlayer;
+        renderBoard(); 
+
+        const winLength = currentBoardSize === 3 ? WIN_LENGTH_3X3 : WIN_LENGTH_4X4_5X5;
+        const winningCells = checkWin(currentBoard, currentPlayer, currentBoardSize, winLength);
+
+        if (winningCells) {
+            endGame(currentPlayer, winningCells);
+        } else if (isBoardFull(currentBoard, currentBoardSize)) { 
+            endGame(null); 
+        } else {
+            switchPlayer();
+            resetTurnTimer();
+            let currentPlayerNameMap;
+            if (selectedGameMode === 'vs_bot') {
+                currentPlayerNameMap = PLAYER_NAME_MAP;
+            } else if (selectedGameMode === 'local_multiplayer') {
+                currentPlayerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
+            } else {
+                currentPlayerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+            }
+            updateGameInfo(`اللاعب الحالي: ${currentPlayerNameMap[currentPlayer]} (<span class="${currentPlayer}">${PLAYER_SYMBOLS[currentPlayer]}</span>)`);
+            if (selectedGameMode === 'vs_bot' && currentPlayer === PLAYER_SYMBOLS.O) {
+                updateGameInfo("الذكاء الاصطناعي يفكر...");
+                requestAIMove();
+            }
+        }
+    }
+
+    function switchPlayer() {
+        currentPlayer = (currentPlayer === PLAYER_SYMBOLS.X) ? PLAYER_SYMBOLS.O : PLAYER_SYMBOLS.X;
+    }
+
+    function checkWin(board, player, boardSize, winLength) {
+        const winningCells = [];
+
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c <= boardSize - winLength; c++) {
+                let win = true;
+                const currentLineCells = [];
+                for (let k = 0; k < winLength; k++) {
+                    if (board[r][c + k] !== player) {
+                        win = false;
+                        break;
+                    }
+                    currentLineCells.push([r, c + k]);
+                }
+                if (win) return currentLineCells;
+            }
+        }
+
+        for (let c = 0; c < boardSize; c++) {
+            for (let r = 0; r <= boardSize - winLength; r++) {
+                let win = true;
+                const currentLineCells = [];
+                for (let k = 0; k < winLength; k++) {
+                    if (board[r + k][c] !== player) {
+                        win = false;
+                        break;
+                    }
+                    currentLineCells.push([r + k, c]);
+                }
+                if (win) return currentLineCells;
+            }
+        }
+
+        for (let r = 0; r <= boardSize - winLength; r++) {
+            for (let c = 0; c <= boardSize - winLength; c++) {
+                let win = true;
+                const currentLineCells = [];
+                for (let k = 0; k < winLength; k++) {
+                    if (board[r + k][c + k] !== player) {
+                        win = false;
+                        break;
+                    }
+                    currentLineCells.push([r + k, c + k]);
+                }
+                if (win) return currentLineCells;
+            }
+        }
+
+        for (let r = 0; r <= boardSize - winLength; r++) {
+            for (let c = winLength - 1; c < boardSize; c++) {
+                let win = true;
+                const currentLineCells = [];
+                for (let k = 0; k < winLength; k++) {
+                    if (board[r + k][c - k] !== player) {
+                        win = false;
+                        break;
+                    }
+                    currentLineCells.push([r + k, c - k]);
+                }
+                if (win) return currentLineCells;
+            }
+        }
+
+        return null; 
+    }
+
+    function isBoardFull(board, boardSize) {
         for (let r = 0; r < boardSize; r++) {
             for (let c = 0; c < boardSize; c++) {
-                const index = r * boardSize + c;
-                const cell = cells[index];
-                const value = board[r][c];
-
-                cell.textContent = value === ' ' ? EMPTY : PLAYER_SYMBOLS[value];
-                cell.classList.toggle('occupied', value !== ' ');
-                cell.classList.toggle('X', value === 'X');
-                cell.classList.toggle('O', value === 'O');
-                // Remove winner-cell class for new game/restart
-                cell.classList.remove(WIN_LINE_COLOR_CLASS); 
+                if (board[r][c] === EMPTY_CELL) {
+                    return false;
+                }
             }
         }
-    }
-
-    function updateGameInfo(message) {
-        gameInfo.textContent = message;
-    }
-
-    async function handleCellClick(r, c) {
-        if (!gameActive || board[r][c] !== ' ' || currentPlayer === 'O' && gameType === 'vs_bot') {
-            return; // Ignore clicks if game not active, cell not empty, or bot's turn
-        }
-
-        board[r][c] = currentPlayer;
-        updateBoardDisplay();
-
-        const winnerLine = checkWin(board, currentPlayer, boardSize);
-        if (winnerLine) {
-            endGame(currentPlayer, winnerLine);
-        } else if (checkDraw(board, boardSize)) {
-            endGame(null); // Draw
-        } else {
-            currentPlayer = getOpponentSymbol(currentPlayer);
-            updateGameInfo(`✨ الدور الآن لـ (${PLAYER_SYMBOLS[currentPlayer]}) ${gameType === 'vs_bot' && currentPlayer === 'O' ? 'الذكاء الاصطناعي 🤖' : 'أنت'}.`);
-            if (gameType === 'vs_bot' && currentPlayer === 'O') {
-                await botMove();
-            } else if (gameType === 'single_player' && currentPlayer === 'O') {
-                // If single player, X and O are both human. No bot move needed.
-                updateGameInfo(`✨ الدور الآن لـ (${PLAYER_SYMBOLS[currentPlayer]}) أنت.`);
-            }
-        }
-    }
-
-    async function botMove() {
-        gameActive = false; // Prevent human moves during bot's turn
-        updateGameInfo(`✨ الدور الآن لـ (${PLAYER_SYMBOLS['O']}) الذكاء الاصطناعي 🤖...`);
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate thinking time
-
-        const move = getBotMove();
-        if (move) {
-            const [r, c] = move;
-            board[r][c] = 'O';
-            updateBoardDisplay();
-
-            const winnerLine = checkWin(board, 'O', boardSize);
-            if (winnerLine) {
-                endGame('O', winnerLine);
-            } else if (checkDraw(board, boardSize)) {
-                endGame(null);
-            } else {
-                currentPlayer = 'X';
-                gameActive = true; // Allow human moves again
-                updateGameInfo(`✨ الدور الآن لـ (${PLAYER_SYMBOLS['X']}) أنت.`);
-            }
-        }
+        return true;
     }
 
     function endGame(winnerSymbol, winningCells = null) {
         gameActive = false;
-        restartBtn.style.display = 'inline-block'; // Show restart button
+        clearInterval(turnTimerInterval); 
+        countdownTimerDisplay.textContent = ''; 
+        restartBtn.style.display = 'inline-block'; 
+
+        let winnerNameMap;
+        if (selectedGameMode === 'vs_bot') {
+            winnerNameMap = PLAYER_NAME_MAP;
+        } else if (selectedGameMode === 'local_multiplayer') {
+            winnerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
+        } else {
+            winnerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+        }
 
         if (winnerSymbol) {
-            updateGameInfo(`${WIN_EMOJI} مبروك! الفائز (${PLAYER_SYMBOLS[winnerSymbol]}) هو: ${winnerSymbol === 'X' ? 'أنت' : 'الذكاء الاصطناعي 🤖'}! 🎉`);
+            updateGameInfo(`${WIN_EMOJI} مبروك! الفائز (<span class="${winnerSymbol}">${PLAYER_SYMBOLS[winnerSymbol]}</span>) هو: ${winnerNameMap[winnerSymbol]}! 🎉`);
             if (winningCells) {
                 highlightWinningLine(winningCells);
             }
-        } else {
+        } else { 
             updateGameInfo(`${DRAW_EMOJI} انتهت اللعبة بالتعادل! لا يوجد فائز.`);
         }
-        // Update player stats (simple version, not persistent)
         updatePlayerStats(winnerSymbol);
     }
 
     function highlightWinningLine(cells) {
-        const boardCells = gameBoardDiv.children;
         cells.forEach(([r, c]) => {
-            const index = r * boardSize + c;
-            boardCells[index].classList.add(WIN_LINE_COLOR_CLASS);
-        });
-    }
-
-    // --- Screen / Flow Management ---
-    let currentScreen = 'settings'; // 'settings', 'game', 'modal'
-    let selectedBoardSize = DEFAULT_BOARD_SIZE; // Store selected size for back button
-
-    function showScreen(screenName) {
-        currentScreen = screenName;
-        document.querySelector('.game-settings').style.display = 'none';
-        gameArea.style.display = 'none';
-        modal.style.display = 'none';
-        document.getElementById('game-mode-heading').style.display = 'none';
-        document.querySelector('.game-mode-options').style.display = 'none';
-        restartBtn.style.display = 'none'; // Hide restart button by default on screen change
-
-        if (screenName === 'settings') {
-            document.querySelector('.game-settings').style.display = 'block';
-            document.getElementById('game-mode-heading').style.display = 'none'; // Initially hidden
-            document.querySelector('.game-mode-options').style.display = 'none'; // Initially hidden
-        } else if (screenName === 'game') {
-            gameArea.style.display = 'block';
-        } else if (screenName === 'game_options') { // Screen after size selection
-            document.querySelector('.game-settings').style.display = 'block';
-            document.getElementById('game-mode-heading').style.display = 'block';
-            document.querySelector('.game-mode-options').style.display = 'flex'; // Use flex for buttons
-        } else if (screenName === 'modal') {
-            modal.style.display = 'flex'; // Use flex to center the modal
-        }
-    }
-
-    // --- Event Listeners ---
-
-    // Board size selection
-    boardSizeOptions.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-            selectedBoardSize = parseInt(button.dataset.size);
-            showScreen('game_options'); // Show game mode options
-            updateGameInfo(`لوحة بحجم ${selectedBoardSize}x${selectedBoardSize} جاهزة. اختر طريقة اللعب.`);
-        });
-    });
-
-    // Game mode selection
-    gameModeOptions.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-            gameType = button.dataset.mode;
-            showScreen('game');
-            initializeBoard(selectedBoardSize);
-            if (gameType === 'vs_bot') {
-                // If bot plays O and it's O's turn, bot makes first move.
-                // In this setup, X always starts, so human always starts.
+            const cellElement = gameBoardDiv.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+            if (cellElement) {
+                cellElement.classList.add('winner-cell'); 
             }
         });
-    });
-
-    restartBtn.addEventListener('click', () => {
-        // When restarting, keep the same board size and game type
-        showScreen('game');
-        initializeBoard(boardSize);
-        if (gameType === 'vs_bot' && currentPlayer === 'O') { // Assuming X always starts, but checking just in case
-            botMove();
-        }
-    });
-
-    backToSettingsBtn.addEventListener('click', () => {
-        showScreen('settings'); // Go back to board size selection
-        gameInfo.textContent = "اختر حجم لوحة اللعب، ثم طريقة اللعب المفضلة لديك:";
-    });
-
-    // --- Modal related functions and events ---
-    const rulesText = `📜 *قواعد لعبة XO:*\n\n1. اللعبة تُلعب على لوحة مربعة (3x3, 4x4, أو 5x5).\n2. اللاعبون يتناوبون على وضع رموزهم (❌ أو ⭕) في خانة فارغة.\n3. *الهدف:* أول لاعب ينجح في وضع 4 من رموزه (أو 3 لـ 3x3) في صف أفقي، عمودي، أو قطري يفوز باللعبة.\n   (ملاحظة: طول الفوز هو 3 لـ 3x3 و 4 للأحجام الأكبر).\n4. إذا امتلأت اللوحة ولم يحقق أي لاعب العدد المطلوب من الرموز المتتالية، تعتبر اللعبة تعادلاً.`;
-
-    showRulesBtn.addEventListener('click', () => {
-        modalTitle.textContent = "قواعد اللعبة";
-        modalText.textContent = rulesText.replace(/\*/g, '').replace(/<br\/>/g, '\n'); // Remove markdown for plain text
-        modalBackBtn.style.display = 'inline-block'; // Show back button for rules
-        showScreen('modal');
-    });
-
-    // Simple in-memory stats (not persistent after page refresh)
-    const playerStats = { wins: 0, losses: 0, draws: 0 };
-    function updatePlayerStats(winnerSymbol) {
-        if (gameType === 'vs_bot') {
-            if (winnerSymbol === 'X') playerStats.wins++;
-            else if (winnerSymbol === 'O') playerStats.losses++; // Human loses to bot
-            else playerStats.draws++;
-        } else if (gameType === 'single_player') {
-            // For single_player, both X and O are the same human
-            // So a win/loss is not really meaningful as the human is both players.
-            // We can just count draws.
-            if (!winnerSymbol) playerStats.draws++; 
-        }
-        // In a full multiplayer, you'd track stats per player ID, but this is simple web.
     }
 
+    function updateGameInfo(message) {
+        gameInfo.innerHTML = message; 
+    }
+
+    function requestAIMove() {
+        const winLength = currentBoardSize === 3 ? WIN_LENGTH_3X3 : WIN_LENGTH_4X4_5X5;
+        let maxDepthForAI; 
+
+        if (selectedAIDifficulty === 'impossible') {
+            if (currentBoardSize === 3) {
+                maxDepthForAI = 9; 
+            } else if (currentBoardSize === 4) {
+                maxDepthForAI = 7; 
+            } else { 
+                maxDepthForAI = 5; 
+            }
+        } else {
+            maxDepthForAI = 0; 
+        }
+
+        aiWorker.postMessage({
+            board: currentBoard.map(row => [...row]), 
+            playerSymbol: PLAYER_SYMBOLS.O, 
+            boardSize: currentBoardSize,
+            difficulty: selectedAIDifficulty,
+            maxDepth: maxDepthForAI, 
+            winLength: winLength 
+        });
+    }
+
+
+    function resetTurnTimer() {
+        clearInterval(turnTimerInterval);
+        turnStartTime = Date.now(); 
+        turnTimerCountdown = DEFAULT_TURN_TIME;
+        updateCountdownDisplay(); 
+
+        turnTimerInterval = setInterval(() => {
+            turnTimerCountdown--;
+            updateCountdownDisplay();
+
+            if (turnTimerCountdown <= 0 && gameActive) {
+                clearInterval(turnTimerInterval);
+                gameActive = false;
+                const timedOutPlayerSymbol = currentPlayer; 
+                const winningPlayerSymbol = (timedOutPlayerSymbol === PLAYER_SYMBOLS.X) ? PLAYER_SYMBOLS.O : PLAYER_SYMBOLS.X;
+                
+                let winnerNameMap;
+                if (selectedGameMode === 'vs_bot') {
+                    winnerNameMap = PLAYER_NAME_MAP;
+                } else if (selectedGameMode === 'local_multiplayer') {
+                    winnerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
+                } else {
+                    winnerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+                }
+                updateGameInfo(`انتهى الوقت لـ ${winnerNameMap[timedOutPlayerSymbol]}! ${WIN_EMOJI} مبروك لـ ${winnerNameMap[winningPlayerSymbol]} هو الفائز! 🎉`);
+                updatePlayerStats(winningPlayerSymbol); 
+                restartBtn.style.display = 'inline-block';
+            }
+        }, 1000); 
+    }
+
+    function updateCountdownDisplay() {
+        countdownTimerDisplay.textContent = `${turnTimerCountdown} ثوانٍ`;
+        if (turnTimerCountdown <= 5) { 
+            countdownTimerDisplay.style.color = '#e74c3c'; 
+        } else {
+            countdownTimerDisplay.style.color = '#ecf0f1'; 
+        }
+    }
+
+    function updatePlayerStats(winnerSymbol) {
+        // Only update stats for 'vs_bot' mode, as requested.
+        // No dummy leaderboard data or "AI" entry will be created.
+        if (selectedGameMode === 'vs_bot') { 
+            if (winnerSymbol === PLAYER_SYMBOLS.X) {
+                playerStats.wins++;
+            } else if (winnerSymbol === PLAYER_SYMBOLS.O) { // AI wins, counts as player loss
+                playerStats.losses++;
+            } else { // Draw
+                playerStats.draws++;
+            }
+            localStorage.setItem('playerStats', JSON.stringify(playerStats));
+        } 
+    }
+
+
+    // --- Event Listeners ---
+    boardSizeOptions.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelectorAll('.board-size-options button').forEach(button => {
+                button.classList.remove('selected');
+            });
+            e.target.classList.add('selected');
+            currentBoardSize = parseInt(e.target.dataset.size);
+            sizeSelectionMessage.textContent = `لقد اخترت لوحة ${currentBoardSize}x${currentBoardSize}.`;
+            nextBtn.disabled = false;
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentBoardSize > 0) {
+            showGameModeScreen();
+        }
+    });
+
+    gameModeOptions.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' && !e.target.disabled) {
+            document.querySelectorAll('.game-mode-options button').forEach(button => {
+                button.classList.remove('selected');
+            });
+            e.target.classList.add('selected');
+            selectedGameMode = e.target.dataset.mode;
+            nextModeBtn.disabled = false;
+        }
+    });
+
+    nextModeBtn.addEventListener('click', () => {
+        if (selectedGameMode === 'vs_bot') {
+            showAIDifficultyScreen();
+        } else if (selectedGameMode === 'local_multiplayer' || selectedGameMode === 'online_multiplayer') { 
+            showGameScreen(); 
+        } else if (selectedGameMode === 'online_room') { 
+            showRoomScreen();
+        }
+    });
+
+    backToInitialBtn.addEventListener('click', showInitialScreen);
+
+    difficultyOptions.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelectorAll('.difficulty-options button').forEach(button => {
+                button.classList.remove('selected');
+            });
+            e.target.classList.add('selected');
+            selectedAIDifficulty = e.target.dataset.difficulty;
+            if (selectedAIDifficulty === 'easy') {
+                difficultyNote.textContent = 'مستوى سهل: حركات عشوائية.';
+            } else if (selectedAIDifficulty === 'medium') {
+                difficultyNote.textContent = 'مستوى متوسط: استراتيجية بسيطة.';
+            } else if (selectedAIDifficulty === 'impossible') {
+                difficultyNote.textContent = 'مستوى مستحيل: الذكاء الاصطناعي لا يهزم.';
+            }
+            nextDifficultyBtn.disabled = false;
+        }
+    });
+
+    nextDifficultyBtn.addEventListener('click', () => {
+        if (selectedAIDifficulty) {
+            showGameScreen();
+        }
+    });
+
+    backToModeBtn.addEventListener('click', showGameModeScreen);
+
+    createRoomBtn.addEventListener('click', () => {
+        alert('إنشاء غرفة قيد التطوير!');
+    });
+
+    joinRoomBtn.addEventListener('click', () => {
+        alert('الانضمام لغرفة قيد التطوير!');
+    });
+
+    backToModeFromRoomBtn.addEventListener('click', showGameModeScreen);
+    backToMainMenuFromRoomBtn.addEventListener('click', showInitialScreen);
+
+    restartBtn.addEventListener('click', initializeGame);
+
+    backToModeFromGameBtn.addEventListener('click', showGameModeScreen);
+
+    backToMainMenuFromGameBtn.addEventListener('click', showInitialScreen);
+    
+    const rulesText = `📜 *قواعد لعبة XO:*\n\n1. اللعبة تُلعب على لوحة مربعة (3x3, 4x4, أو 5x5).\n2. اللاعبون يتناوبون على وضع رموزهم (❌ أو ⭕) في خانة فارغة.\n3. *الهدف:* أول لاعب ينجح في وضع 4 من رموزه (أو 3 لـ 3x3) في صف أفقي، عمودي، أو قطري يفوز باللعبة.\n    (ملاحظة: طول الفوز هو 3 لـ 3x3 و 4 للأحجام الأكبر).\n4. إذا امتلأت اللوحة ولم يحقق أي لاعب العدد المطلوب من الرموز المتتالية، تعتبر اللعبة تعادلاً.`;
+
+    showRulesBtn.addEventListener('click', () => {
+        const formattedRules = rulesText.replace(/\*(.*?)\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
+        showModalScreen("قواعد اللعبة", formattedRules);
+    });
     showStatsBtn.addEventListener('click', () => {
-        modalTitle.textContent = "إحصائياتك 📊";
-        modalText.innerHTML = `• الانتصارات: ${playerStats.wins} ${WIN_EMOJI}\n• الخسائر: ${playerStats.losses} 💔\n• التعادلات: ${playerStats.draws} ${DRAW_EMOJI}`;
-        modalBackBtn.style.display = 'inline-block'; // Show back button
-        showScreen('modal');
+        const statsContent = `• الانتصارات: ${playerStats.wins} ${WIN_EMOJI}<br/>• الخسائر: ${playerStats.losses} 💔<br/>• التعادلات: ${playerStats.draws} ${DRAW_EMOJI}`;
+        showModalScreen("إحصائياتك 📊", statsContent);
     });
 
     showLeaderboardBtn.addEventListener('click', () => {
-        modalTitle.textContent = "لوحة المتصدرين 📈";
-        // Since this is client-side, a real leaderboard is not possible without a backend.
-        // We'll show a placeholder or just your stats.
-        modalText.innerHTML = "لوحة المتصدرين تتطلب اتصالًا بقاعدة بيانات عبر الإنترنت.\n\n" +
-                              "حالياً، هذه هي إحصائياتك:\n" +
-                              `• الانتصارات: ${playerStats.wins} ${WIN_EMOJI}\n• الخسائر: ${playerStats.losses} 💔\n• التعادلات: ${playerStats.draws} ${DRAW_EMOJI}`;
-        modalBackBtn.style.display = 'inline-block'; // Show back button
-        showScreen('modal');
+        let lbHtml = "<h3>لوحة المتصدرين</h3>";
+        // Check if there are any stats for "أنت" (you)
+        if (playerStats.wins > 0 || playerStats.losses > 0 || playerStats.draws > 0) {
+            lbHtml += `<ul><li>1. أنت (فوز: ${playerStats.wins}, خسارة: ${playerStats.losses}, تعادل: ${playerStats.draws})</li></ul>`;
+        } else {
+            lbHtml += "<p>لا توجد بيانات لوحة متصدرين حالياً. العب ضد الذكاء الاصطناعي لترى إحصائياتك هنا!</p>";
+        }
+        lbHtml += "<br/>";
+        lbHtml += "ملاحظة: هذه لوحة متصدرين خاصة بك فقط."; // Updated note
+        
+        showModalScreen("لوحة المتصدرين 📈", lbHtml);
     });
 
-    closeModalBtn.addEventListener('click', () => {
-        showScreen('game_options'); // Back to game mode selection (after size)
-        gameInfo.textContent = `لقد اخترت لوحة بحجم ${selectedBoardSize}x${selectedBoardSize}. الآن، اختر طريقة اللعب:`;
-    });
+    modalBackBtn.addEventListener('click', showInitialScreen); 
+    modalMainMenuBtn.addEventListener('click', showInitialScreen); 
+    closeModalBtn.addEventListener('click', showInitialScreen); 
 
-    modalBackBtn.addEventListener('click', () => {
-        showScreen('game_options'); // Back to game mode selection (after size)
-        gameInfo.textContent = `لقد اخترت لوحة بحجم ${selectedBoardSize}x${selectedBoardSize}. الآن، اختر طريقة اللعب:`;
-    });
-
-    modalMainMenuBtn.addEventListener('click', () => {
-        showScreen('settings'); // Back to initial settings (board size)
-        gameInfo.textContent = "اختر حجم لوحة اللعب، ثم طريقة اللعب المفضلة لديك:";
-    });
-
-    // Initial load
-    showScreen('settings');
+    showInitialScreen();
 });
