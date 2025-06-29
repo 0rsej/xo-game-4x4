@@ -156,6 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
         'X': 'اللاعب 1', 
         'O': 'اللاعب 2' 
     }; 
+    // New: If you need to differentiate player symbols in game info for online modes
+    const ONLINE_PLAYER_NAME_MAP = {
+        'X': 'اللاعب X', 
+        'O': 'اللاعب O' 
+    };
 
     let currentBoardSize = 0; 
     let currentBoard = [];
@@ -284,7 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (selectedGameMode === 'local_multiplayer') {
             currentPlayerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
         } else {
-            currentPlayerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+            // Fallback for online or future modes if symbols are still needed
+            currentPlayerNameMap = ONLINE_PLAYER_NAME_MAP; 
         }
         updateGameInfo(`اللاعب الحالي: ${currentPlayerNameMap[currentPlayer]} (<span class="${currentPlayer}">${PLAYER_SYMBOLS[currentPlayer]}</span>)`);
         resetTurnTimer();
@@ -353,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (selectedGameMode === 'local_multiplayer') {
                 currentPlayerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
             } else {
-                currentPlayerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+                currentPlayerNameMap = ONLINE_PLAYER_NAME_MAP; 
             }
             updateGameInfo(`اللاعب الحالي: ${currentPlayerNameMap[currentPlayer]} (<span class="${currentPlayer}">${PLAYER_SYMBOLS[currentPlayer]}</span>)`);
             if (selectedGameMode === 'vs_bot' && currentPlayer === PLAYER_SYMBOLS.O) {
@@ -454,11 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (selectedGameMode === 'local_multiplayer') {
             winnerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
         } else {
-            winnerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+            winnerNameMap = ONLINE_PLAYER_NAME_MAP; 
         }
 
         if (winnerSymbol) {
-            updateGameInfo(`${WIN_EMOJI} مبروك! الفائز (<span class="${winnerSymbol}">${PLAYER_SYMBOLS[winnerSymbol]}</span>) هو: ${winnerNameMap[winnerSymbol]}! 🎉`);
+            // Modified line: Remove the symbol (X or O) display next to the winner's name
+            updateGameInfo(`${WIN_EMOJI} مبروك! الفائز هو: ${winnerNameMap[winnerSymbol]}! 🎉`);
             if (winningCells) {
                 highlightWinningLine(winningCells);
             }
@@ -546,8 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (selectedGameMode === 'local_multiplayer') {
                     winnerNameMap = LOCAL_MULTIPLAYER_NAME_MAP;
                 } else {
-                    winnerNameMap = { 'X': 'اللاعب X', 'O': 'اللاعب O' }; 
+                    winnerNameMap = ONLINE_PLAYER_NAME_MAP; 
                 }
+                // Modified line: Remove the symbol (X or O) display next to the winner's name
                 updateGameInfo(`انتهى الوقت لـ ${winnerNameMap[timedOutPlayerSymbol]}! ${WIN_EMOJI} مبروك لـ ${winnerNameMap[winningPlayerSymbol]} هو الفائز! 🎉`);
                 updatePlayerStats(winningPlayerSymbol); 
                 restartBtn.style.display = 'inline-block';

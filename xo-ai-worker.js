@@ -252,18 +252,22 @@ function getBestMoveImpossible(board, playerSymbol, boardSize, maxDepth, winLeng
     availableMoves.sort(() => Math.random() - 0.5);
 
     // Initial check for immediate wins/blocks (critical for responsiveness and guaranteed optimal play)
+    // 1. Check for immediate win (AI) - HIGHEST PRIORITY
     for (const [r, c] of availableMoves) {
         board[r][c] = playerSymbol; // Simulate AI move
         if (checkWinWorker(board, playerSymbol, boardSize, winLength)) { // Passed winLength
             board[r][c] = EMPTY;
-            return [r, c]; // AI wins
+            return [r, c]; // AI wins - return immediately
         }
         board[r][c] = EMPTY;
+    }
 
+    // 2. Block opponent's immediate win - SECOND HIGHEST PRIORITY
+    for (const [r, c] of availableMoves) { 
         board[r][c] = getOpponentSymbol(playerSymbol); // Simulate opponent move
         if (checkWinWorker(board, getOpponentSymbol(playerSymbol), boardSize, winLength)) { // Passed winLength
             board[r][c] = EMPTY;
-            return [r, c]; // Block opponent's win
+            return [r, c]; // Block opponent's win - return immediately
         }
         board[r][c] = EMPTY;
     }
@@ -317,7 +321,7 @@ function getBestMoveMedium(currentBoard, playerSymbol, currentBoardSize, winLeng
     }
 
     // 2. Block opponent's immediate win - second highest priority
-    for (const [r, c] of availableMoves) { // Fixed syntax: `const [r, c] = of availableMoves` to `const [r, c] of availableMoves`
+    for (const [r, c] of availableMoves) { 
         currentBoard[r][c] = opponentSymbol; // Simulate opponent's move
         if (checkWinWorker(currentBoard, opponentSymbol, currentBoardSize, winLength)) { // Passed winLength
             currentBoard[r][c] = EMPTY;
