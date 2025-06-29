@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // List of music tracks (add more if you have them)
     const musicPlaylist = [
         'background_music.mp3',
-         'music2.mp3', 
-         'music3.mp3'
+         'music2.m4a', 
+         'music3.m4a'
     ];
     let currentTrackIndex = 0;
     // Set initial state based on localStorage or default to true
