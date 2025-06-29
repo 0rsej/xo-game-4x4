@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // أضف هذا الجزء لتأخير حركة الذكاء الاصطناعي
         // 1500 مللي ثانية = 1.5 ثانية
-        const delayTime = 1150; // يمكنك تغيير هذه القيمة إلى 1000 مللي ثانية (1 ثانية) أو أي قيمة أخرى
+        const delayTime = 1400; // يمكنك تغيير هذه القيمة إلى 1000 مللي ثانية (1 ثانية) أو أي قيمة أخرى
 
         setTimeout(() => {
             aiWorker.postMessage({
