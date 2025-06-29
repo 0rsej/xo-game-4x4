@@ -46,8 +46,101 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = modal.querySelector('.close-button');
     const modalTitle = document.getElementById('modal-title');
     const modalText = document.getElementById('modal-text');
-    const modalBackBtn = document.getElementById('modal-back-btn');
-    const modalMainMenuBtn = document.getElementById('modal-main-menu-btn');
+
+    // Music Control Elements and Variables
+    const backgroundMusic = document.getElementById('background-music');
+    const toggleMusicBtn = document.getElementById('toggle-music-btn');
+    const nextMusicBtn = document.getElementById('next-music-btn');
+    
+    // List of music tracks (add more if you have them)
+    const musicPlaylist = [
+        'background_music.mp3',
+         'music2.mp2', 
+         'music3.mp3'
+    ];
+    let currentTrackIndex = 0;
+    // Set initial state based on localStorage or default to true
+    let isMusicPlaying = JSON.parse(localStorage.getItem('isMusicPlaying')) !== false; 
+    // Load last played track index (or 0 if none)
+    currentTrackIndex = parseInt(localStorage.getItem('currentTrackIndex') || '0');
+
+    // Set initial volume
+    backgroundMusic.volume = 0.3; 
+    backgroundMusic.src = musicPlaylist[currentTrackIndex]; // Set the initial track
+
+    // --- Music Control Functions ---
+    function updateMusicButtonText() {
+        if (isMusicPlaying) {
+            toggleMusicBtn.textContent = '⏸️ إيقاف الموسيقى';
+        } else {
+            toggleMusicBtn.textContent = '🎵 تشغيل الموسيقى';
+        }
+    }
+
+    function playMusic() {
+        // Only try to play if it's currently paused or if we are switching track
+        if (backgroundMusic.paused || backgroundMusic.src !== musicPlaylist[currentTrackIndex]) {
+            backgroundMusic.src = musicPlaylist[currentTrackIndex]; // Ensure correct track
+            backgroundMusic.play().then(() => {
+                isMusicPlaying = true;
+                localStorage.setItem('isMusicPlaying', true);
+                updateMusicButtonText();
+            }).catch(error => {
+                console.warn("Music autoplay prevented or failed:", error);
+                // If autoplay is prevented, set state to paused and update button
+                isMusicPlaying = false; 
+                localStorage.setItem('isMusicPlaying', false);
+                updateMusicButtonText();
+                // Optionally, show a message to the user that they need to interact
+            });
+        }
+    }
+
+    function pauseMusic() {
+        if (!backgroundMusic.paused) {
+            backgroundMusic.pause();
+            isMusicPlaying = false;
+            localStorage.setItem('isMusicPlaying', false);
+            updateMusicButtonText();
+        }
+    }
+
+    function toggleMusic() {
+        if (isMusicPlaying) {
+            pauseMusic();
+        } else {
+            playMusic();
+        }
+    }
+
+    function nextTrack() {
+        currentTrackIndex = (currentTrackIndex + 1) % musicPlaylist.length;
+        localStorage.setItem('currentTrackIndex', currentTrackIndex); // Save current track index
+        playMusic(); // Play the next track
+    }
+
+    // --- Handle Autoplay Policy & Initial Play ---
+    // Try to play music immediately upon user interaction
+    // This listener will be attached to the document body to catch any user click/tap
+    document.body.addEventListener('click', function attemptInitialPlay() {
+        if (!backgroundMusic.played.length && isMusicPlaying) { // Only try if music hasn't played yet AND it should be playing
+            playMusic();
+            // Important: Remove this listener after the first successful attempt
+            // or if the music starts playing due to user interaction.
+            if (backgroundMusic.played.length > 0) { // If music actually started playing
+                document.body.removeEventListener('click', attemptInitialPlay);
+            }
+        }
+    }, {once: true}); // Use {once: true} to ensure it runs only once per load cycle
+
+
+    // Also try to play music when DOM is fully loaded, if allowed
+    // This is a common pattern for "best effort" autoplay
+    // If the browser blocks it, the click listener will catch the first user interaction
+    if (isMusicPlaying) {
+        playMusic(); 
+    }
+
 
     // --- Game State Variables ---
     const EMPTY_CELL = ' '; 
@@ -72,12 +165,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedAIDifficulty = ''; 
     const WIN_LENGTH_3X3 = 3;
     const WIN_LENGTH_4X4_5X5 = 4;
+    const WIN_LENGTH_6X6 = 4; // Win length for 6x6 (assuming 4 in a row is still required for win)
     const DEFAULT_TURN_TIME = 30; 
 
     // --- Player Stats (for single player) ---
     let playerStats = JSON.parse(localStorage.getItem('playerStats')) || { wins: 0, losses: 0, draws: 0 };
-    // DELETED: Dummy leaderboard data is removed.
-    let leaderboardData = []; // Initialize as empty array. Leaderboard will only reflect 'أنت' data if added there.
+    let leaderboardData = []; 
 
     let aiWorker;
     if (window.Worker) {
@@ -104,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Screen Management Functions ---
+    // No music control in hideAllScreens, as music should persist
     function hideAllScreens() {
         initialScreen.style.display = 'none';
         gameModeScreen.style.display = 'none';
@@ -111,8 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gameScreen.style.display = 'none';
         roomScreen.style.display = 'none'; 
         modal.style.display = 'none'; 
+        // Music state (playing/paused) is preserved
     }
 
+    // No music control in show...Screen functions, as music should persist
     function showInitialScreen() {
         hideAllScreens();
         initialScreen.style.display = 'block';
@@ -234,7 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBoard[row][col] = currentPlayer;
         renderBoard(); 
 
-        const winLength = currentBoardSize === 3 ? WIN_LENGTH_3X3 : WIN_LENGTH_4X4_5X5;
+        let winLength;
+        if (currentBoardSize === 3) {
+            winLength = WIN_LENGTH_3X3;
+        } else if (currentBoardSize === 6) { 
+            winLength = WIN_LENGTH_6X6;
+        } else { 
+            winLength = WIN_LENGTH_4X4_5X5;
+        }
         const winningCells = checkWin(currentBoard, currentPlayer, currentBoardSize, winLength);
 
         if (winningCells) {
@@ -265,8 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkWin(board, player, boardSize, winLength) {
-        const winningCells = [];
-
         for (let r = 0; r < boardSize; r++) {
             for (let c = 0; c <= boardSize - winLength; c++) {
                 let win = true;
@@ -381,7 +482,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function requestAIMove() {
-        const winLength = currentBoardSize === 3 ? WIN_LENGTH_3X3 : WIN_LENGTH_4X4_5X5;
+        let winLength;
+        if (currentBoardSize === 3) {
+            winLength = WIN_LENGTH_3X3;
+        } else if (currentBoardSize === 6) { 
+            winLength = WIN_LENGTH_6X6;
+        } else { 
+            winLength = WIN_LENGTH_4X4_5X5;
+        }
+
         let maxDepthForAI; 
 
         if (selectedAIDifficulty === 'impossible') {
@@ -389,8 +498,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 maxDepthForAI = 9; 
             } else if (currentBoardSize === 4) {
                 maxDepthForAI = 7; 
-            } else { 
+            } else if (currentBoardSize === 5) { 
                 maxDepthForAI = 5; 
+            } else if (currentBoardSize === 6) { 
+                maxDepthForAI = 4; 
             }
         } else {
             maxDepthForAI = 0; 
@@ -448,14 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePlayerStats(winnerSymbol) {
-        // Only update stats for 'vs_bot' mode, as requested.
-        // No dummy leaderboard data or "AI" entry will be created.
         if (selectedGameMode === 'vs_bot') { 
             if (winnerSymbol === PLAYER_SYMBOLS.X) {
                 playerStats.wins++;
-            } else if (winnerSymbol === PLAYER_SYMBOLS.O) { // AI wins, counts as player loss
+            } else if (winnerSymbol === PLAYER_SYMBOLS.O) { 
                 playerStats.losses++;
-            } else { // Draw
+            } else { 
                 playerStats.draws++;
             }
             localStorage.setItem('playerStats', JSON.stringify(playerStats));
@@ -548,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     backToMainMenuFromGameBtn.addEventListener('click', showInitialScreen);
     
-    const rulesText = `📜 *قواعد لعبة XO:*\n\n1. اللعبة تُلعب على لوحة مربعة (3x3, 4x4, أو 5x5).\n2. اللاعبون يتناوبون على وضع رموزهم (❌ أو ⭕) في خانة فارغة.\n3. *الهدف:* أول لاعب ينجح في وضع 4 من رموزه (أو 3 لـ 3x3) في صف أفقي، عمودي، أو قطري يفوز باللعبة.\n    (ملاحظة: طول الفوز هو 3 لـ 3x3 و 4 للأحجام الأكبر).\n4. إذا امتلأت اللوحة ولم يحقق أي لاعب العدد المطلوب من الرموز المتتالية، تعتبر اللعبة تعادلاً.`;
+    const rulesText = `📜 *قواعد لعبة XO:*\n\n1. اللعبة تُلعب على لوحة مربعة (3x3, 4x4, 5x5, أو 6x6).\n2. اللاعبون يتناوبون على وضع رموزهم (❌ أو ⭕) في خانة فارغة.\n3. *الهدف:* أول لاعب ينجح في وضع 4 من رموزه (أو 3 لـ 3x3) في صف أفقي، عمودي، أو قطري يفوز باللعبة.\n    (ملاحظة: طول الفوز هو 3 لـ 3x3 و 4 للأحجام الأكبر، بما في ذلك 6x6).\n4. إذا امتلأت اللوحة ولم يحقق أي لاعب العدد المطلوب من الرموز المتتالية، تعتبر اللعبة تعادلاً.`;
 
     showRulesBtn.addEventListener('click', () => {
         const formattedRules = rulesText.replace(/\*(.*?)\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
@@ -561,21 +670,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showLeaderboardBtn.addEventListener('click', () => {
         let lbHtml = "<h3>لوحة المتصدرين</h3>";
-        // Check if there are any stats for "أنت" (you)
         if (playerStats.wins > 0 || playerStats.losses > 0 || playerStats.draws > 0) {
             lbHtml += `<ul><li>1. أنت (فوز: ${playerStats.wins}, خسارة: ${playerStats.losses}, تعادل: ${playerStats.draws})</li></ul>`;
         } else {
             lbHtml += "<p>لا توجد بيانات لوحة متصدرين حالياً. العب ضد الذكاء الاصطناعي لترى إحصائياتك هنا!</p>";
         }
         lbHtml += "<br/>";
-        lbHtml += "ملاحظة: هذه لوحة متصدرين خاصة بك فقط."; // Updated note
+        lbHtml += "ملاحظة: هذه لوحة متصدرين خاصة بك فقط.";
         
         showModalScreen("لوحة المتصدرين 📈", lbHtml);
     });
 
-    modalBackBtn.addEventListener('click', showInitialScreen); 
-    modalMainMenuBtn.addEventListener('click', showInitialScreen); 
     closeModalBtn.addEventListener('click', showInitialScreen); 
 
-    showInitialScreen();
+    // Music Control Event Listeners
+    toggleMusicBtn.addEventListener('click', toggleMusic);
+    nextMusicBtn.addEventListener('click', nextTrack);
+    
+    // Initial setup: update button text based on stored state
+    updateMusicButtonText();
+
+    // Initial screen display on load
+    showInitialScreen(); 
 });

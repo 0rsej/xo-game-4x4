@@ -17,6 +17,7 @@
                 <button data-size="3">3x3</button>
                 <button data-size="4">4x4</button>
                 <button data-size="5">5x5</button>
+                <button data-size="6">6x6</button>
             </div>
             <p id="size-selection-message" class="selection-message">لم يتم اختيار لوحة بعد.</p>
             <div class="action-controls">
@@ -28,14 +29,22 @@
                 <button id="show-leaderboard-btn" class="info-btn">📈 لوحة المتصدرين</button>
                 <button id="show-stats-btn" class="info-btn">📊 إحصائياتي</button>
             </div>
+
+            <div class="music-controls">
+                <button id="toggle-music-btn" class="music-btn">⏸️ إيقاف الموسيقى</button> 
+                <button id="next-music-btn" class="music-btn">⏭️ الأغنية التالية</button>
+            </div>
         </div>
 
         <div id="game-mode-screen" class="game-section" style="display:none;">
             <p id="mode-selection-message" class="selection-message"></p>
             <h2>اختر طريقة اللعب:</h2>
             <div class="game-mode-options">
-                <button data-mode="local_multiplayer">👥 لاعبان (نفس الجهاز)</button> <button data-mode="vs_bot">🤖 العب ضد الذكاء الاصطناعي</button>
-                <button data-mode="online_multiplayer" disabled title="قيد التطوير">🌐 لاعبان (عبر الإنترنت)</button> <button data-mode="online_room" disabled title="قيد التطوير">🎛️ إنشاء/انضمام لغرفة</button> </div>
+                <button data-mode="local_multiplayer">👥 لاعبان (نفس الجهاز)</button>
+                <button data-mode="vs_bot">🤖 العب ضد الذكاء الاصطناعي</button>
+                <button data-mode="online_multiplayer" disabled title="قيد التطوير">🌐 لاعبان (عبر الإنترنت)</button>
+                <button data-mode="online_room" disabled title="قيد التطوير">🎛️ إنشاء/انضمام لغرفة</button>
+            </div>
             <div class="action-controls">
                 <button id="next-mode-btn" class="action-btn" disabled>التالي</button>
                 <button id="back-to-initial-btn" class="control-btn">🔙 رجوع</button>
@@ -72,6 +81,7 @@
                 <button id="back-to-main-menu-from-room-btn" class="control-btn">🏠 القائمة الرئيسية</button>
             </div>
         </div>
+
         <div id="game-screen" class="game-section" style="display:none;">
             <div class="timer-container">
                 <span id="countdown-timer" class="timer-text"></span>
@@ -91,14 +101,14 @@
                 <span class="close-button">&times;</span>
                 <h3 id="modal-title"></h3>
                 <p id="modal-text"></p>
-                <div class="modal-buttons">
-                    <button id="modal-back-btn" class="control-btn">🔙 رجوع</button>
-                    <button id="modal-main-menu-btn" class="control-btn">🏠 القائمة الرئيسية</button>
-                </div>
             </div>
         </div>
     </div>
 
+    <audio id="background-music" loop>
+        <source src="background_music.mp3" type="audio/mpeg">
+        متصفحك لا يدعم عنصر الصوت.
+    </audio>
     <script src="script.js"></script>
 </body>
 </html>
