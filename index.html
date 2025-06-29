@@ -3,18 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة XO</title>
+    <title>لعبة XO الاحترافية</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="game-container">
-        <h1>لعبة XO</h1>
-        <div id="game-board" class="game-board">
+    <div class="container">
+        <h1>لعبة XO الاحترافية 🎮</h1>
+        
+        <div class="game-settings">
+            <h2>اختر حجم اللوحة</h2>
+            <div class="board-size-options">
+                <button data-size="3">3x3</button>
+                <button data-size="4">4x4</button>
+                <button data-size="5">5x5</button>
             </div>
-        <p id="game-status">الرجاء الانتظار...</p>
-        <button id="restart-button" style="display: none;">إعادة اللعب</button>
+
+            <h2 id="game-mode-heading" style="display:none;">اختر طريقة اللعب:</h2>
+            <div class="game-mode-options" style="display:none;">
+                <button data-mode="single_player">👤 العب مع نفسي</button>
+                <button data-mode="vs_bot">🤖 العب ضد الذكاء الاصطناعي</button>
+                </div>
+        </div>
+
+        <div class="game-area" style="display:none;">
+            <p id="game-info" class="game-info-message">اختر حجماً وطريقة لعب للبدء.</p>
+            <div id="game-board" class="game-board">
+                </div>
+            <div class="game-controls">
+                <button id="restart-btn" class="control-btn" style="display:none;">♻️ العب مرة أخرى</button>
+                <button id="back-to-settings-btn" class="control-btn">🔙 تغيير حجم اللوحة</button>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <button id="show-rules-btn" class="info-btn">❓ قواعد اللعبة</button>
+            <button id="show-leaderboard-btn" class="info-btn">📈 لوحة المتصدرين</button>
+            <button id="show-stats-btn" class="info-btn">📊 إحصائياتي</button>
+        </div>
+
+        <div id="modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3 id="modal-title"></h3>
+                <p id="modal-text"></p>
+                <button id="modal-back-btn" class="control-btn" style="display:none;">🔙 رجوع</button>
+                <button id="modal-main-menu-btn" class="control-btn">🏠 العودة للقائمة الرئيسية</button>
+            </div>
+        </div>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script> <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

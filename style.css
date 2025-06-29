@@ -1,90 +1,239 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Cairo', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #2c2c2c; /* Dark background */
-    color: #f0f0f0; /* Light text */
+    background-color: #2c3e50; /* Dark blue-gray */
     margin: 0;
+    color: #ecf0f1; /* Light gray for text */
     direction: rtl; /* Right-to-left for Arabic */
-}
-
-.game-container {
-    background-color: #3a3a3a;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     text-align: center;
-    min-width: 300px;
+    overflow-x: hidden;
 }
 
-h1 {
-    color: #8aff8a; /* Greenish for title */
+.container {
+    background-color: #34495e; /* Slightly lighter blue-gray */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+h1, h2 {
+    color: #ecf0f1;
     margin-bottom: 20px;
 }
 
-.game-board {
-    display: grid;
-    grid-template-columns: repeat(4, 70px); /* 4 columns, 70px each */
-    grid-template-rows: repeat(4, 70px);    /* 4 rows, 70px each */
-    gap: 5px;
-    margin: 20px auto;
-    width: fit-content; /* Adjust width to content */
-    border: 2px solid #555;
-    border-radius: 5px;
+.game-settings, .game-area, .info-section {
+    margin-bottom: 25px;
 }
 
-.cell {
-    width: 70px;
+.board-size-options button,
+.game-mode-options button,
+.control-btn,
+.info-btn {
+    background-color: #2980b9; /* Blue */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    margin: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto;
+    min-width: 150px; /* Ensure consistent button size */
+}
+
+.board-size-options button:hover,
+.game-mode-options button:hover,
+.control-btn:hover,
+.info-btn:hover {
+    background-color: #3498db; /* Lighter blue on hover */
+    transform: translateY(-2px);
+}
+
+.board-size-options,
+.game-mode-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#game-board {
+    display: grid;
+    gap: 5px;
+    width: fit-content;
+    margin: 20px auto;
+    border: 3px solid #7f8c8d; /* Darker gray for board border */
+    border-radius: 5px;
+    background-color: #616e7f; /* Slightly darker than main container */
+    padding: 5px;
+}
+
+.board-cell {
+    width: 70px; /* Larger cells */
     height: 70px;
-    background-color: #4a4a4a;
+    background-color: #95a5a6; /* Medium gray */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 3em;
+    font-size: 3em; /* Larger symbols */
     font-weight: bold;
     cursor: pointer;
+    border: 1px solid #7f8c8d;
     border-radius: 5px;
-    transition: background-color 0.2s ease-in-out;
-    user-select: none; /* Prevent text selection */
+    transition: background-color 0.1s ease;
+    color: #2c3e50; /* Dark text for symbols */
 }
 
-.cell:hover {
-    background-color: #6a6a6a;
+.board-cell:hover:not(.occupied):not(.winner-cell) {
+    background-color: #bdc3c7; /* Lighter gray on hover for empty cells */
 }
 
-.cell.occupied {
+.board-cell.occupied {
     cursor: not-allowed;
-    background-color: #5a5a5a;
 }
 
-.cell.X {
-    color: #ff6b6b; /* Reddish for X */
-}
-
-.cell.O {
-    color: #6bbaff; /* Blueish for O */
-}
-
-#game-status {
-    font-size: 1.2em;
-    margin-top: 20px;
-    color: #f0f0f0;
-}
-
-#restart-button {
-    background-color: #4CAF50; /* Green */
+/* Winner line styling */
+.board-cell.winner-cell {
+    background-color: #27ae60; /* Green for winning line */
     color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
+    animation: flashWin 0.8s infinite alternate; /* Flash effect */
 }
 
-#restart-button:hover {
-    background-color: #45a049;
+@keyframes flashWin {
+    from { background-color: #27ae60; }
+    to { background-color: #2ecc71; } /* Lighter green */
 }
+
+
+.game-info-message {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ecf0f1;
+    min-height: 2em; /* To prevent layout shift */
+}
+
+.game-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Modal styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 100; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #34495e;
+    margin: auto;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    width: 80%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+    color: #ecf0f1;
+}
+
+.close-button {
+    color: #aaa;
+    float: left; /* Position to the top right */
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #fff;
+    text-decoration: none;
+}
+
+#modal-title {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: #f1c40f; /* Yellowish for titles */
+}
+
+#modal-text {
+    font-size: 1.1em;
+    line-height: 1.6;
+    white-space: pre-wrap; /* Preserve line breaks for rules */
+    text-align: justify; /* Justify text for readability */
+    margin-bottom: 20px;
+}
+
+#modal-back-btn, #modal-main-menu-btn {
+    margin-top: 15px;
+    background-color: #2980b9;
+    width: fit-content;
+    padding: 10px 20px;
+    font-size: 0.95em;
+}
+
+#modal-back-btn:hover, #modal-main-menu-btn:hover {
+    background-color: #3498db;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .board-cell {
+        width: 55px; /* Smaller cells on small screens */
+        height: 55px;
+        font-size: 2.2em;
+    }
+    .container {
+        padding: 20px;
+    }
+    .board-size-options button,
+    .game-mode-options button,
+    .control-btn,
+    .info-btn {
+        width: 100%; /* Full width buttons on small screens */
+        margin: 5px 0;
+    }
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    #modal-title {
+        font-size: 1.5em;
+    }
+    #modal-text {
+        font-size: 0.95em;
+    }
+}
+
+/* Specific styling for symbols */
+.board-cell.X { color: #e74c3c; /* Red for X */ }
+.board-cell.O { color: #3498db; /* Blue for O */ }
+
+/* Winning line color for symbols */
+.board-cell.X.winner-cell { color: white; }
+.board-cell.O.winner-cell { color: white; }
