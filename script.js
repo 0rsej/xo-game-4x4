@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // List of music tracks (add more if you have them)
     const musicPlaylist = [
         'background_music.mp3',
-         'music2.m4a', 
-         'music3.m4a'
+        'music2.m4a', 
+        'music3.m4a'
     ];
     let currentTrackIndex = 0;
     // Set initial state based on localStorage or default to true
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             updateGameInfo(`اللاعب الحالي: ${currentPlayerNameMap[currentPlayer]} (<span class="${currentPlayer}">${PLAYER_SYMBOLS[currentPlayer]}</span>)`);
             if (selectedGameMode === 'vs_bot' && currentPlayer === PLAYER_SYMBOLS.O) {
-                updateGameInfo("الذكاء الاصطناعي يفكر...");
+                updateGameInfo("الذكاء الاصطناعي يفكر..."); // تحديث الرسالة قبل التأخير
                 requestAIMove();
             }
         }
@@ -506,18 +506,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             maxDepthForAI = 0; 
         }
+
         // أضف هذا الجزء لتأخير حركة الذكاء الاصطناعي
         // 1500 مللي ثانية = 1.5 ثانية
-        const delayTime = 1500; // يمكنك تغيير هذه القيمة إلى 1000 مللي ثانية (1 ثانية) أو أي قيمة أخرى
+        const delayTime = 1150; // يمكنك تغيير هذه القيمة إلى 1000 مللي ثانية (1 ثانية) أو أي قيمة أخرى
 
-        aiWorker.postMessage({
-            board: currentBoard.map(row => [...row]), 
-            playerSymbol: PLAYER_SYMBOLS.O, 
-            boardSize: currentBoardSize,
-            difficulty: selectedAIDifficulty,
-            maxDepth: maxDepthForAI, 
-            winLength: winLength 
-        });
+        setTimeout(() => {
+            aiWorker.postMessage({
+                board: currentBoard.map(row => [...row]), 
+                playerSymbol: PLAYER_SYMBOLS.O, 
+                boardSize: currentBoardSize,
+                difficulty: selectedAIDifficulty,
+                maxDepth: maxDepthForAI, 
+                winLength: winLength 
+            });
+        }, delayTime); // قم بتأخير استدعاء العامل الخلفي
     }
 
 
