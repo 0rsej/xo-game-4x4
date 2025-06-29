@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // List of music tracks (add more if you have them)
     const musicPlaylist = [
         'background_music.mp3',
-         'music2.mp2', 
+         'music2.mp3', 
          'music3.mp3'
     ];
     let currentTrackIndex = 0;
